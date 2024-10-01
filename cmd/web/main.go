@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"text/template"
 
 	"github.com/AVSanjay-12/snippetbox/internal/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -15,6 +16,7 @@ type application struct{
 	errorLog *log.Logger
 	infoLog *log.Logger
 	snippets *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -35,11 +37,19 @@ func main() {
 
 	defer db.Close()
 
+	// Initialize a new template cache
+	templateCache, err := newTemplateCache()
+	if err != nil{
+		errorLog.Fatal(err)
+		return 
+	}
+
 	// New instance of application struct - contains dependencies
 	app := &application{
 		errorLog: errorLog,
 		infoLog: infoLog,
 		snippets: &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{
