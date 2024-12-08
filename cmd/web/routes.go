@@ -19,7 +19,7 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	dynamic := alice.New(app.sessionManager.LoadAndSave)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
 	// Application routes
 	// router.HandlerFunc is an adapter -> Allows the usage of http.HandlerFunc
@@ -31,7 +31,7 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodGet, "/user/login", dynamic.ThenFunc(app.userLogin))
 	router.Handler(http.MethodPost, "/user/login", dynamic.ThenFunc(app.userLoginPost))
 
-	protected := alice.New(app.requireAuthentication)
+	protected := dynamic.Append(app.requireAuthentication)
 	router.Handler(http.MethodGet, "/snippet/create", protected.Then(dynamic.ThenFunc(app.snippetCreate)))
 	router.Handler(http.MethodPost, "/snippet/create", protected.Then(dynamic.ThenFunc(app.snippetCreatePost)))
 	router.Handler(http.MethodPost, "/user/logout", protected.Then(dynamic.ThenFunc(app.userLogoutPost)))
