@@ -200,11 +200,6 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	err = app.sessionManager.RenewToken(r.Context())
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
 	// Add the ID of the current user to the session, so that they are now
 	// 'logged in'.
 	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
